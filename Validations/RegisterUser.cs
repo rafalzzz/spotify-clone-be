@@ -8,37 +8,37 @@ namespace SpotifyAPI.Validations
     {
         public RegisterUserRequestValidator()
         {
-            RuleFor(requestBody => requestBody.FirstName)
-            .Cascade(CascadeMode.Stop)
-            .FirstName();
-
-            RuleFor(requestBody => requestBody.LastName)
-            .Cascade(CascadeMode.Stop)
-            .LastName();
-
-            RuleFor(requestBody => requestBody.Nickname)
-            .Cascade(CascadeMode.Stop)
-            .Nickname();
-
             RuleFor(requestBody => requestBody.Email)
-            .Cascade(CascadeMode.Stop)
-            .Email();
+           .Cascade(CascadeMode.Stop)
+           .Email();
 
             RuleFor(requestBody => requestBody.Password)
             .Cascade(CascadeMode.Stop)
             .Password();
 
+            RuleFor(requestBody => requestBody.Nickname)
+            .Cascade(CascadeMode.Stop)
+            .Nickname();
+
+            RuleFor(requestBody => requestBody.DateOfBirth)
+            .Cascade(CascadeMode.Stop)
+            .DateOfBirth();
+
             RuleFor(requestBody => requestBody.Gender)
             .Cascade(CascadeMode.Stop)
             .Gender();
 
-            RuleFor(requestBody => requestBody.Prefix)
-           .Cascade(CascadeMode.Stop)
-           .Prefix();
+            RuleFor(requestBody => requestBody.Offers)
+            .Cascade(CascadeMode.Stop)
+            .IsBoolean();
 
-            RuleFor(requestBody => requestBody.PhoneNumber)
-           .Cascade(CascadeMode.Stop)
-           .PhoneNumber();
+            RuleFor(requestBody => requestBody.ShareInformation)
+            .Cascade(CascadeMode.Stop)
+            .IsBoolean();
+
+            RuleFor(requestBody => requestBody.Terms)
+            .Cascade(CascadeMode.Stop)
+            .IsBoolean();
         }
     }
 }

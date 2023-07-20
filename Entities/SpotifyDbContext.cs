@@ -14,8 +14,17 @@ namespace SpotifyAPI.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>();
+            modelBuilder.Entity<User>()
+            .Property(entity => entity.Offers)
+            .HasConversion<int>();
 
+            modelBuilder.Entity<User>()
+            .Property(entity => entity.ShareInformation)
+            .HasConversion<int>();
+
+            modelBuilder.Entity<User>()
+            .Property(entity => entity.Terms)
+            .HasConversion<int>();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

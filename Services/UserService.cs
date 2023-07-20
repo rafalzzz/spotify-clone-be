@@ -40,16 +40,20 @@ namespace SpotifyAPI.Services
 
             var passwordHash = _passwordHasher.Hash(registerUserDto.Password);
 
+            Console.Write(registerUserDto.Offers);
+            Console.Write(registerUserDto.ShareInformation);
+            Console.Write(registerUserDto.Terms);
+
             var newUser = new User
             {
-                FirstName = registerUserDto.FirstName,
-                LastName = registerUserDto.LastName,
-                Nickname = registerUserDto.Nickname,
                 Email = registerUserDto.Email,
                 Password = passwordHash,
-                Prefix = registerUserDto.Prefix,
-                PhoneNumber = registerUserDto.PhoneNumber,
+                Nickname = registerUserDto.Nickname,
+                DateOfBirth = registerUserDto.DateOfBirth,
                 Gender = registerUserDto.Gender,
+                Offers = registerUserDto.Offers,
+                ShareInformation = registerUserDto.ShareInformation,
+                Terms = registerUserDto.Terms,
                 RefreshToken = "",
             };
 
