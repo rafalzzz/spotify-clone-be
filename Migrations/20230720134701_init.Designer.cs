@@ -11,7 +11,7 @@ using SpotifyAPI.Entities;
 namespace SpotifyApi.Migrations
 {
     [DbContext(typeof(SpotifyDbContext))]
-    [Migration("20230712201012_init")]
+    [Migration("20230720134701_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -32,32 +32,32 @@ namespace SpotifyApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Email")
+                    b.Property<string>("DateOfBirth")
                         .HasColumnType("text");
 
-                    b.Property<string>("FirstName")
+                    b.Property<string>("Email")
                         .HasColumnType("text");
 
                     b.Property<int>("Gender")
                         .HasColumnType("integer");
 
-                    b.Property<string>("LastName")
-                        .HasColumnType("text");
-
                     b.Property<string>("Nickname")
                         .HasColumnType("text");
+
+                    b.Property<int>("Offers")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Password")
                         .HasColumnType("text");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Prefix")
-                        .HasColumnType("text");
-
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");
+
+                    b.Property<int>("ShareInformation")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Terms")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

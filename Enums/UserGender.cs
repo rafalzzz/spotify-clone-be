@@ -5,10 +5,14 @@ namespace SpotifyAPI.Enums
     public enum UserGender
     {
         [Description("male")]
-        Male,
+        Male = 1,
         [Description("female")]
-        Female,
+        Female = 2,
+        [Description("non-binary-person")]
+        NonBinaryPerson = 3,
         [Description("other")]
-        Other
+        Other = 4,
+        [Description("not-provided")]
+        NotProvided = 5
     }
 }
