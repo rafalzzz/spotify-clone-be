@@ -58,6 +58,12 @@ namespace SpotifyApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Nickname")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 #pragma warning restore 612, 618
