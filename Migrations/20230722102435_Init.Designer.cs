@@ -11,8 +11,8 @@ using SpotifyAPI.Entities;
 namespace SpotifyApi.Migrations
 {
     [DbContext(typeof(SpotifyDbContext))]
-    [Migration("20230720134701_init")]
-    partial class init
+    [Migration("20230722102435_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,6 +60,12 @@ namespace SpotifyApi.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Nickname")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

@@ -25,6 +25,14 @@ namespace SpotifyAPI.Entities
             modelBuilder.Entity<User>()
             .Property(entity => entity.Terms)
             .HasConversion<int>();
+
+            modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+            modelBuilder.Entity<User>()
+            .HasIndex(u => u.Nickname)
+            .IsUnique();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -38,6 +46,11 @@ namespace SpotifyAPI.Entities
 
             var connectionString = Environment.GetEnvironmentVariable(EnvironmentVariables.ConnectionString);
             optionsBuilder.UseNpgsql(connectionString);
+        }
+
+        public async Task<bool> UserExists(string email, string nickname)
+        {
+            return await Users.AnyAsync(x => x.Email == email || x.Nickname == nickname);
         }
     }
 }

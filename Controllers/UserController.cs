@@ -25,7 +25,7 @@ namespace SpotifyAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult Register([FromBody] RegisterUserRequest registerUserDto)
+        public async Task<ActionResult> Register([FromBody] RegisterUserRequest registerUserDto)
         {
             var registerRequestValidation = _registerUserValidator.Validate(registerUserDto);
             var validationResultErrors = _requestValidationService.GetValidationErrorsResult(registerRequestValidation);
@@ -35,11 +35,18 @@ namespace SpotifyAPI.Controllers
                 return BadRequest(validationResultErrors);
             }
 
+            bool userAlreadyExist = await _userService.UserExists(registerUserDto.Email, registerUserDto.Nickname);
+
+            if (userAlreadyExist)
+            {
+                return BadRequest("User with the provided email address or nickname already exists");
+            }
+
             var id = _userService.CreateUser(registerUserDto);
 
             if (id is null)
             {
-                return BadRequest("User with the provided email address already exists");
+                return BadRequest("Something went wrong, please try again");
             }
 
             return Ok();

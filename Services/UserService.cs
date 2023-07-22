@@ -5,6 +5,7 @@ namespace SpotifyAPI.Services
 {
     public interface IUserService
     {
+        Task<bool> UserExists(string email, string nickname);
         int? CreateUser(RegisterUserRequest userDto);
     }
 
@@ -21,28 +22,14 @@ namespace SpotifyAPI.Services
             _passwordHasher = passwordHasher;
         }
 
-        public User GetUserByEmail(string email)
+        public async Task<bool> UserExists(string email, string nickname)
         {
-            var user = _dbContext.Users.FirstOrDefault(user => user.Email == email);
-            return user;
-        }
-
-        public bool CheckIfEmailExist(string email)
-        {
-            var user = GetUserByEmail(email);
-            if (user is null) return false;
-            return true;
+            return await _dbContext.UserExists(email, nickname);
         }
 
         public int? CreateUser(RegisterUserRequest registerUserDto)
         {
-            if (CheckIfEmailExist(registerUserDto.Email)) return null;
-
             var passwordHash = _passwordHasher.Hash(registerUserDto.Password);
-
-            Console.Write(registerUserDto.Offers);
-            Console.Write(registerUserDto.ShareInformation);
-            Console.Write(registerUserDto.Terms);
 
             var newUser = new User
             {
