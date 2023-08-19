@@ -48,10 +48,10 @@ namespace SpotifyAPI.Extensions
         public static void DateOfBirth<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
             ruleBuilder
-                .NotEmpty().WithMessage("DateOfBirth is required")
-                .Must(CheckDateOfBirth.BeAValidDate).WithMessage("DateOfBirth must be in the format YYYY-MM-DD")
-                .Must(CheckDateOfBirth.BeLessThan100YearsOld).WithMessage("DateOfBirth cannot be more than 100 years old")
-                .Must(CheckDateOfBirth.BeLessThanOrEqualToToday).WithMessage("DateOfBirth cannot be later than today's date");
+            .NotEmpty().WithMessage("DateOfBirth is required")
+            .Must(CheckDateOfBirth.BeAValidDate).WithMessage("DateOfBirth must be in the format YYYY-MM-DD")
+            .Must(CheckDateOfBirth.BeLessThan100YearsOld).WithMessage("DateOfBirth cannot be more than 100 years old")
+            .Must(CheckDateOfBirth.BeLessThanOrEqualToToday).WithMessage("DateOfBirth cannot be later than today's date");
         }
 
         public static void Gender<T>(this IRuleBuilder<T, UserGender> ruleBuilder)
@@ -66,8 +66,15 @@ namespace SpotifyAPI.Extensions
         public static void IsBoolean<T>(this IRuleBuilder<T, bool> ruleBuilder)
         {
             ruleBuilder
-                .NotNull()
-                .WithMessage("{PropertyName} is required");
+            .NotNull()
+            .WithMessage("{PropertyName} is required");
+        }
+
+        public static void Login<T>(this IRuleBuilder<T, string> ruleBuilder)
+        {
+            ruleBuilder
+            .NotEmpty()
+            .WithMessage("Login is required");
         }
 
         public static void Id<T>(this IRuleBuilder<T, int> ruleBuilder)

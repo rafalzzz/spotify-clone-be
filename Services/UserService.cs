@@ -10,6 +10,7 @@ namespace SpotifyAPI.Services
         int? CreateUser(RegisterUserRequest userDto);
         (VerifyUserError error, User user) VerifyUser(LoginUserRequest loginUserDto);
         bool SaveUserRefreshToken(string? token, User user);
+        User? GetUserByLogin(string login);
     }
 
     public class UserService : IUserService
@@ -65,7 +66,7 @@ namespace SpotifyAPI.Services
             return user;
         }
 
-        private User GetUserByLogin(string login)
+        public User GetUserByLogin(string login)
         {
             bool isEmail = login.Contains("@");
 
