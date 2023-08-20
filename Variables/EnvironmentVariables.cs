@@ -11,7 +11,7 @@ namespace SpotifyAPI.Variables
         public const string FrontendDomain = "FRONTEND_DOMAIN";
         public const string SecretKey = "SECRET_KEY";
         public const string RefreshTokenSecretKey = "REFRESH_TOKEN_SECRET_KEY";
-        public const string ResetPasswordSecretKey = "RESET_PASSWORD_SECRET_KEY";
+        public const string PasswordResetSecretKey = "PASSWORD_RESET_SECRET_KEY";
         public const string SmtpServer = "SMTP_SERVER";
         public const string SmtpPort = "SMTP_PORT";
         public const string ClientUrl = "CLIENT_URL";

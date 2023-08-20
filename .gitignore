@@ -1,5 +1,7 @@
 /obj
 /bin
 /logs
+/.vscode
 
 .env
+SpotifyApi.sln

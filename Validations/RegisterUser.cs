@@ -9,8 +9,8 @@ namespace SpotifyAPI.Validations
         public RegisterUserRequestValidator()
         {
             RuleFor(requestBody => requestBody.Email)
-           .Cascade(CascadeMode.Stop)
-           .Email();
+            .Cascade(CascadeMode.Stop)
+            .Email();
 
             RuleFor(requestBody => requestBody.Password)
             .Cascade(CascadeMode.Stop)

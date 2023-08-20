@@ -10,8 +10,7 @@ namespace SpotifyAPI.Validations
         {
             RuleFor(requestBody => requestBody.Login)
             .Cascade(CascadeMode.Stop)
-            .NotEmpty()
-            .WithMessage("Login is required");
+            .Login();
 
             RuleFor(requestBody => requestBody.Password)
             .Cascade(CascadeMode.Stop)

@@ -14,25 +14,31 @@ namespace SpotifyAPI.Controllers
         private readonly IUserService _userService;
         private readonly IAccessTokenService _accessTokenService;
         private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IPasswordResetService _passwordResetService;
         private readonly IRequestValidationService _requestValidationService;
         private readonly IValidator<RegisterUserRequest> _registerUserValidator;
         private readonly IValidator<LoginUserRequest> _loginUserValidator;
+        private readonly IValidator<PasswordResetRequest> _passwordResetRequestValidator;
 
         public UserController(
             IUserService userService,
             IAccessTokenService accessTokenService,
             IRefreshTokenService refreshTokenService,
+            IPasswordResetService passwordResetService,
             IRequestValidationService requestValidationService,
             IValidator<RegisterUserRequest> registerUserValidator,
-            IValidator<LoginUserRequest> loginUserValidator
+            IValidator<LoginUserRequest> loginUserValidator,
+            IValidator<PasswordResetRequest> passwordResetRequestValidator
             )
         {
             _userService = userService;
             _accessTokenService = accessTokenService;
             _refreshTokenService = refreshTokenService;
+            _passwordResetService = passwordResetService;
             _requestValidationService = requestValidationService;
             _registerUserValidator = registerUserValidator;
             _loginUserValidator = loginUserValidator;
+            _passwordResetRequestValidator = passwordResetRequestValidator;
         }
 
         [HttpPost]
@@ -99,6 +105,29 @@ namespace SpotifyAPI.Controllers
 
                     return Ok();
             }
+        }
+
+        [HttpPost(UserControllerEndpoints.PasswordReset)]
+        public async Task<IActionResult> PasswordReset([FromBody] PasswordResetRequest passwordResetDto)
+        {
+            var passwordResetRequestValidation = _passwordResetRequestValidator.Validate(passwordResetDto);
+            var validationResultErrors = _requestValidationService.GetValidationErrorsResult(passwordResetRequestValidation);
+
+            if (validationResultErrors != null)
+            {
+                return BadRequest(validationResultErrors);
+            }
+
+            var user = _userService.GetUserByLogin(passwordResetDto.Login);
+
+            if (user is null)
+            {
+                return BadRequest("Account with the provided login doest not exist");
+            }
+
+            await _passwordResetService.SendPasswordResetToken(user.Email);
+
+            return Ok();
         }
     }
 }
