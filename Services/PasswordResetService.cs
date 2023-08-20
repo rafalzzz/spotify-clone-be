@@ -60,13 +60,22 @@ namespace SpotifyAPI.Services
         {
             string token = GeneratePasswordResetToken(email);
 
-            string emailTitle = "Confirm your email";
+            string emailTitle = "Password reset";
 
             string clientUrl = Environment.GetEnvironmentVariable(EnvironmentVariables.ClientUrl);
             string passwordResetUrl = $"{clientUrl}/{token}";
-            string emailMessage = $"To reset you password open enter here: {passwordResetUrl}";
+            string emailContent = $@"
+                <html>
+                    <body style='width: 100%;'>
+                        <h3 style='text-align: center;'>To reset your password</h3>
+                        <div style='text-align: center; margin-top: 10px;'>
+                            <a href='{passwordResetUrl}' style='background-color: #4CAF50; color: white; padding: 14px 20px; text-align: center; text-decoration: none; display: inline-block; border: none; cursor: pointer;'>Open this link</a>
+                        </div>
+                    </body>
+                </html>";
 
-            await _emailService.SendEmailAsync(email, emailTitle, emailMessage);
+
+            await _emailService.SendEmailAsync(email, emailTitle, emailContent);
         }
 
         private string GetPasswordResetSecretKey()

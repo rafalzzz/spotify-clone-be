@@ -16,7 +16,7 @@ namespace SpotifyAPI.Services
         {
         }
 
-        public async Task SendEmailAsync(string email, string subject, string message)
+        public async Task SendEmailAsync(string email, string subject, string emailContent)
         {
 
             bool useUsl = true;
@@ -33,7 +33,7 @@ namespace SpotifyAPI.Services
             emailMessage.Subject = subject;
             emailMessage.Body = new TextPart(TextFormat.Html)
             {
-                Text = message
+                Text = emailContent
             };
 
             using var client = new SmtpClient();
