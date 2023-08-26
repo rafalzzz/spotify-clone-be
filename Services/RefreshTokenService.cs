@@ -60,7 +60,7 @@ namespace SpotifyAPI.Services
 
         public int? GetUserIdFromRefreshToken(string refreshToken)
         {
-            var principals = GetPrincipalsFromRefreshToken(refreshToken);
+            ClaimsPrincipal principals = GetPrincipalsFromRefreshToken(refreshToken);
             Claim userIdClaim = principals.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
 
             int userId;

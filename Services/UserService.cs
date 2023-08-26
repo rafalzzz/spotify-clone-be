@@ -41,7 +41,7 @@ namespace SpotifyAPI.Services
         {
             var passwordHash = _passwordHasher.Hash(registerUserDto.Password);
 
-            var newUser = new User
+            User newUser = new User
             {
                 Email = registerUserDto.Email,
                 Password = passwordHash,
