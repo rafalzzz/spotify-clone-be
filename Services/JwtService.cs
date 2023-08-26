@@ -25,15 +25,15 @@ namespace SpotifyAPI.Services
 
         public SigningCredentials GetSigningCredentials(string secretKey)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         }
 
         public string GenerateToken(List<Claim> claims, string issuer, string audience, string secretKey, DateTime expires)
         {
-            var creds = GetSigningCredentials(secretKey);
+            SigningCredentials creds = GetSigningCredentials(secretKey);
 
-            var token = new JwtSecurityToken(
+            JwtSecurityToken token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
@@ -49,8 +49,8 @@ namespace SpotifyAPI.Services
             try
             {
 
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var validationParameters = new TokenValidationParameters
+                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+                TokenValidationParameters validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = GetSigningCredentials(secretKey).Key,
@@ -64,7 +64,7 @@ namespace SpotifyAPI.Services
             }
             catch (Exception exception)
             {
-                var errorMessage = $"{tokenErrorMessage} Time: {DateTime.Now}. Error message: {exception.Message}";
+                string errorMessage = $"{tokenErrorMessage} Time: {DateTime.Now}. Error message: {exception.Message}";
                 _logger.LogError(errorMessage);
             }
 
@@ -73,7 +73,7 @@ namespace SpotifyAPI.Services
 
         public CookieOptions CreateCookieOptions(DateTimeOffset tokenLifeTime)
         {
-            var cookieOptions = new CookieOptions
+            CookieOptions cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
