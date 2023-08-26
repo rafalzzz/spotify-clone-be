@@ -77,31 +77,43 @@ namespace SpotifyAPI.Controllers
                 return validationResult;
             }
 
-            (VerifyUserError error, User user) verifiedUser = _userService.VerifyUser(loginUserDto);
+            (VerifyUserError error, User user) = _userService.VerifyUser(loginUserDto);
 
-            switch (verifiedUser.error)
+            return error switch
             {
-                case VerifyUserError.WrongLogin:
-                    return NotFound("Incorrect login");
-                case VerifyUserError.WrongPassword:
-                    return BadRequest("Incorrect password");
-                default:
-                    string userId = verifiedUser.user.Id.ToString();
-                    string token = _accessTokenService.GenerateAccessToken(userId);
-                    CookieOptions accessTokenCookieOptions = _accessTokenService.GetAccessTokenCookieOptions();
-                    Response.Cookies.Append(CookieNames.AccessToken, token, accessTokenCookieOptions);
+                VerifyUserError.WrongLogin => NotFound("Incorrect login"),
+                VerifyUserError.WrongPassword => BadRequest("Incorrect password"),
+                _ => SetupUserLogin(user, loginUserDto.RememberMe)
+            };
+        }
 
-                    if (loginUserDto.RememberMe)
-                    {
-                        string refreshToken = _refreshTokenService.GenerateRefreshToken(userId);
-                        _userService.SaveUserRefreshToken(refreshToken, verifiedUser.user);
-                        CookieOptions refreshTokenCookieOptions = _refreshTokenService.GetRefreshTokenCookieOptions();
-                        Response.Cookies.Append(CookieNames.RefreshToken, refreshToken, refreshTokenCookieOptions);
-                    }
+        private ActionResult SetupUserLogin(User user, bool rememberMe)
+        {
+            SetAccessToken(user);
 
-
-                    return Ok();
+            if (rememberMe)
+            {
+                SetRefreshToken(user);
             }
+
+            return Ok();
+        }
+
+        private void SetAccessToken(User user)
+        {
+            string userId = user.Id.ToString();
+            string token = _accessTokenService.GenerateAccessToken(userId);
+            CookieOptions accessTokenCookieOptions = _accessTokenService.GetAccessTokenCookieOptions();
+            Response.Cookies.Append(CookieNames.AccessToken, token, accessTokenCookieOptions);
+        }
+
+        private void SetRefreshToken(User user)
+        {
+            string userId = user.Id.ToString();
+            string refreshToken = _refreshTokenService.GenerateRefreshToken(userId);
+            _userService.SaveUserRefreshToken(refreshToken, user);
+            CookieOptions refreshTokenCookieOptions = _refreshTokenService.GetRefreshTokenCookieOptions();
+            Response.Cookies.Append(CookieNames.RefreshToken, refreshToken, refreshTokenCookieOptions);
         }
 
         [HttpPost(UserControllerEndpoints.PasswordReset)]
@@ -120,10 +132,7 @@ namespace SpotifyAPI.Controllers
                 return BadRequest("Account with the provided login doest not exist");
             }
 
-            string token = _passwordResetService.GeneratePasswordResetToken(user.Email);
-            _userService.SavePasswordResetToken(token, user);
-
-            await _passwordResetService.SendPasswordResetToken(user.Email, token);
+            await _userService.GenerateAndSendPasswordResetToken(user);
 
             return Ok();
         }

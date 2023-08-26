@@ -12,7 +12,7 @@ namespace SpotifyAPI.Services
         bool SaveUserRefreshToken(string? token, User user);
         User GetUserByEmail(string email);
         User? GetUserByLogin(string login);
-        void SavePasswordResetToken(string token, User user);
+        Task GenerateAndSendPasswordResetToken(User user);
         bool ChangeUserPassword(User user, string password);
     }
 
@@ -20,13 +20,16 @@ namespace SpotifyAPI.Services
     {
         private readonly SpotifyDbContext _dbContext;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IPasswordResetService _passwordResetService;
         public UserService(
             SpotifyDbContext dbContext,
-            IPasswordHasher passwordHasher
+            IPasswordHasher passwordHasher,
+            IPasswordResetService passwordResetService
             )
         {
             _dbContext = dbContext;
             _passwordHasher = passwordHasher;
+            _passwordResetService = passwordResetService;
         }
 
         public async Task<bool> UserExists(string email, string nickname)
@@ -125,6 +128,13 @@ namespace SpotifyAPI.Services
         {
             user.PasswordResetToken = token;
             _dbContext.SaveChanges();
+        }
+
+        public async Task GenerateAndSendPasswordResetToken(User user)
+        {
+            string token = _passwordResetService.GeneratePasswordResetToken(user.Email);
+            SavePasswordResetToken(token, user);
+            await _passwordResetService.SendPasswordResetToken(user.Email, token);
         }
 
         public bool ChangeUserPassword(User user, string password)
