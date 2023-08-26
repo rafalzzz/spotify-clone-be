@@ -19,6 +19,7 @@ namespace SpotifyAPI.Controllers
         private readonly IValidator<RegisterUserRequest> _registerUserValidator;
         private readonly IValidator<LoginUserRequest> _loginUserValidator;
         private readonly IValidator<PasswordResetRequest> _passwordResetRequestValidator;
+        private readonly IValidator<PasswordResetCompleteRequest> _passwordResetCompleteRequestValidator;
 
         public UserController(
             IUserService userService,
@@ -28,7 +29,8 @@ namespace SpotifyAPI.Controllers
             IRequestValidationService requestValidationService,
             IValidator<RegisterUserRequest> registerUserValidator,
             IValidator<LoginUserRequest> loginUserValidator,
-            IValidator<PasswordResetRequest> passwordResetRequestValidator
+            IValidator<PasswordResetRequest> passwordResetRequestValidator,
+            IValidator<PasswordResetCompleteRequest> passwordResetCompleteRequestValidator
             )
         {
             _userService = userService;
@@ -39,28 +41,25 @@ namespace SpotifyAPI.Controllers
             _registerUserValidator = registerUserValidator;
             _loginUserValidator = loginUserValidator;
             _passwordResetRequestValidator = passwordResetRequestValidator;
+            _passwordResetCompleteRequestValidator = passwordResetCompleteRequestValidator;
         }
 
         [HttpPost]
         public async Task<ActionResult> Register([FromBody] RegisterUserRequest registerUserDto)
         {
-            var registerRequestValidation = _registerUserValidator.Validate(registerUserDto);
-            var validationResultErrors = _requestValidationService.GetValidationErrorsResult(registerRequestValidation);
-
-            if (validationResultErrors != null)
+            var validationResult = _requestValidationService.ValidateRequest(registerUserDto, _registerUserValidator);
+            if (validationResult is BadRequestObjectResult)
             {
-                return BadRequest(validationResultErrors);
+                return validationResult;
             }
 
             bool userAlreadyExist = await _userService.UserExists(registerUserDto.Email, registerUserDto.Nickname);
-
             if (userAlreadyExist)
             {
                 return BadRequest("User with the provided email address or nickname already exists");
             }
 
             var id = _userService.CreateUser(registerUserDto);
-
             if (id is null)
             {
                 return BadRequest("Something went wrong, please try again");
@@ -72,12 +71,10 @@ namespace SpotifyAPI.Controllers
         [HttpPost(UserControllerEndpoints.Login)]
         public ActionResult Login([FromBody] LoginUserRequest loginUserDto)
         {
-            var loginRequestValidation = _loginUserValidator.Validate(loginUserDto);
-            var validationResultErrors = _requestValidationService.GetValidationErrorsResult(loginRequestValidation);
-
-            if (validationResultErrors != null)
+            var validationResult = _requestValidationService.ValidateRequest(loginUserDto, _loginUserValidator);
+            if (validationResult is BadRequestObjectResult)
             {
-                return BadRequest(validationResultErrors);
+                return validationResult;
             }
 
             (VerifyUserError error, User user) verifiedUser = _userService.VerifyUser(loginUserDto);
@@ -110,24 +107,50 @@ namespace SpotifyAPI.Controllers
         [HttpPost(UserControllerEndpoints.PasswordReset)]
         public async Task<IActionResult> PasswordReset([FromBody] PasswordResetRequest passwordResetDto)
         {
-            var passwordResetRequestValidation = _passwordResetRequestValidator.Validate(passwordResetDto);
-            var validationResultErrors = _requestValidationService.GetValidationErrorsResult(passwordResetRequestValidation);
-
-            if (validationResultErrors != null)
+            var validationResult = _requestValidationService.ValidateRequest(passwordResetDto, _passwordResetRequestValidator);
+            if (validationResult is BadRequestObjectResult)
             {
-                return BadRequest(validationResultErrors);
+                return validationResult;
             }
 
-            var user = _userService.GetUserByLogin(passwordResetDto.Login);
+            User? user = _userService.GetUserByLogin(passwordResetDto.Login);
 
             if (user is null)
             {
                 return BadRequest("Account with the provided login doest not exist");
             }
 
-            await _passwordResetService.SendPasswordResetToken(user.Email);
+            string token = _passwordResetService.GeneratePasswordResetToken(user.Email);
+            _userService.SavePasswordResetToken(token, user);
+
+            await _passwordResetService.SendPasswordResetToken(user.Email, token);
 
             return Ok();
+        }
+
+        [HttpPut(UserControllerEndpoints.PasswordResetComplete)]
+        public ActionResult PasswordResetComplete([FromBody] PasswordResetCompleteRequest passwordResetCompleteDto, [FromRoute] string token)
+        {
+            var validationResult = _requestValidationService.ValidateRequest(passwordResetCompleteDto, _passwordResetCompleteRequestValidator);
+            if (validationResult is BadRequestObjectResult)
+            {
+                return validationResult;
+            }
+
+            var tokenValidationResult = _passwordResetService.ValidateToken(token);
+            if (tokenValidationResult != null)
+            {
+                return tokenValidationResult;
+            }
+
+            User? user = _userService.GetUserByEmail(_passwordResetService.GetEmailFromToken(token));
+            if (user == null || user.PasswordResetToken != token)
+            {
+                return BadRequest("Invalid token");
+            }
+
+            _userService.ChangeUserPassword(user, passwordResetCompleteDto.Password);
+            return Ok("Password has changed successfully");
         }
     }
 }
