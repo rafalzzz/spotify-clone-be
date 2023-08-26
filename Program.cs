@@ -41,6 +41,7 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddScoped<IValidator<RegisterUserRequest>, RegisterUserRequestValidator>();
 builder.Services.AddScoped<IValidator<LoginUserRequest>, LoginUserRequestValidator>();
 builder.Services.AddScoped<IValidator<PasswordResetRequest>, PasswordResetRequestValidator>();
+builder.Services.AddScoped<IValidator<PasswordResetCompleteRequest>, PasswordResetCompleteRequestValidator>();
 
 builder.Services.AddControllers();
 

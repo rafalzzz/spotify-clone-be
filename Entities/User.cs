@@ -14,5 +14,6 @@ namespace SpotifyAPI.Entities
         public bool ShareInformation { get; set; }
         public bool Terms { get; set; }
         public string RefreshToken { get; set; } = null!;
+        public string PasswordResetToken { get; set; } = null!;
     }
 }
