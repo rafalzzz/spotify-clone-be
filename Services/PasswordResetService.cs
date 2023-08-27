@@ -67,7 +67,7 @@ namespace SpotifyAPI.Services
             string emailTitle = "Password reset";
 
             string clientUrl = Environment.GetEnvironmentVariable(EnvironmentVariables.ClientUrl);
-            string passwordResetUrl = $"{clientUrl}/{token}";
+            string passwordResetUrl = $"{clientUrl}/password-reset/complete/{token}";
             string emailContent = $@"
                 <html>
                     <body style='width: 100%;'>
