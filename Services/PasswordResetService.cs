@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SpotifyAPI.Enums;
@@ -16,8 +15,7 @@ namespace SpotifyAPI.Services
     {
         string GeneratePasswordResetToken(string userEmail);
         Task SendPasswordResetToken(string email, string token);
-        ActionResult ValidateToken(string token);
-        string GetEmailFromToken(object tokenResult);
+        (string? validationError, string? email) ValidateToken(string token);
     }
 
     public class PasswordResetService : IPasswordResetService
@@ -125,60 +123,66 @@ namespace SpotifyAPI.Services
             return jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email);
         }
 
-        private object LogErrorAndReturnTokenStatus(string errorMessage, VerifyPasswordResetToken status)
+        private void LogError(string errorMessage)
         {
             _logger.LogError(errorMessage);
-            return status;
         }
 
-        private object GetEmailFromPasswordResetToken(string token)
+        private PasswordResetTokenValidationResult CreateErrorResult(string errorMessage, VerifyPasswordResetToken status)
+        {
+            LogError(errorMessage);
+            return new PasswordResetTokenValidationResult
+            {
+                Email = null,
+                ErrorStatus = status
+            };
+        }
+
+        private PasswordResetTokenValidationResult GetEmailFromPasswordResetToken(string token)
         {
             try
             {
                 string passwordResetSecretKey = GetPasswordResetSecretKey();
                 SecurityKey key = GetSigningCredentialsKey(passwordResetSecretKey);
-
                 TokenValidationParameters tokenValidationParameters = CreateTokenValidationParameters(key);
                 JwtSecurityToken jwtSecurityToken = ValidateJwtToken(token, tokenValidationParameters);
-
                 Claim emailClaim = GetEmailClaim(jwtSecurityToken);
-                return emailClaim?.Value;
+
+                return new PasswordResetTokenValidationResult
+                {
+                    Email = emailClaim?.Value,
+                    ErrorStatus = null
+                };
             }
             catch (SecurityTokenExpiredException)
             {
-                string errorMessage = $"Token has expired. Time: {DateTime.Now}.";
-                return LogErrorAndReturnTokenStatus(errorMessage, VerifyPasswordResetToken.TokenHasExpired);
+                return CreateErrorResult($"Token has expired. Time: {DateTime.Now}.", VerifyPasswordResetToken.TokenHasExpired);
             }
             catch (SecurityException exception)
             {
-                string errorMessage = $"Reset password token validation error. Time: {DateTime.Now}. Error message: {exception.Message}";
-                return LogErrorAndReturnTokenStatus(errorMessage, VerifyPasswordResetToken.TokenValidationError);
+                return CreateErrorResult($"Reset password token validation error. Time: {DateTime.Now}. Error message: {exception.Message}", VerifyPasswordResetToken.TokenValidationError);
             }
             catch (Exception exception)
             {
-                string errorMessage = $"Unexpected error during token validation. Time: {DateTime.Now}. Error message: {exception.Message}";
-                return LogErrorAndReturnTokenStatus(errorMessage, VerifyPasswordResetToken.TokenValidationError);
+                return CreateErrorResult($"Unexpected error during token validation. Time: {DateTime.Now}. Error message: {exception.Message}", VerifyPasswordResetToken.TokenValidationError);
             }
         }
 
-        public ActionResult ValidateToken(string token)
+        public (string? validationError, string? email) ValidateToken(string token)
         {
-            object emailFromTokenResult = GetEmailFromPasswordResetToken(token);
-            if (emailFromTokenResult is VerifyPasswordResetToken tokenStatus)
+            PasswordResetTokenValidationResult validationResult = GetEmailFromPasswordResetToken(token);
+
+            if (validationResult.ErrorStatus.HasValue)
             {
-                return tokenStatus switch
+                return validationResult.ErrorStatus.Value switch
                 {
-                    VerifyPasswordResetToken.TokenHasExpired => new UnauthorizedObjectResult("Token has expired"),
-                    VerifyPasswordResetToken.TokenValidationError => new UnauthorizedObjectResult("Invalid token"),
-                    _ => new UnauthorizedObjectResult("Unknown token error")
+                    VerifyPasswordResetToken.TokenHasExpired => ("Token has expired", null),
+                    VerifyPasswordResetToken.TokenValidationError => ("Invalid token", null),
+                    _ => ("Unknown token error", null),
                 };
             }
-            return null;
-        }
 
-        public string GetEmailFromToken(object tokenResult)
-        {
-            return tokenResult.ToString();
+            return (null, validationResult.Email);
         }
     }
 }

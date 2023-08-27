@@ -10,9 +10,9 @@ namespace SpotifyAPI.Services
         int? CreateUser(RegisterUserRequest userDto);
         (VerifyUserError error, User user) VerifyUser(LoginUserRequest loginUserDto);
         bool SaveUserRefreshToken(string? token, User user);
-        User GetUserByEmail(string email);
         User? GetUserByLogin(string login);
         Task GenerateAndSendPasswordResetToken(User user);
+        User? CheckUserPasswordResetToken(string email, string token);
         bool ChangeUserPassword(User user, string password);
     }
 
@@ -61,7 +61,7 @@ namespace SpotifyAPI.Services
             return newUser.Id;
         }
 
-        public User GetUserByEmail(string email)
+        private User GetUserByEmail(string email)
         {
             var user = _dbContext.Users.FirstOrDefault(user => user.Email == email);
             return user;
@@ -135,6 +135,18 @@ namespace SpotifyAPI.Services
             string token = _passwordResetService.GeneratePasswordResetToken(user.Email);
             SavePasswordResetToken(token, user);
             await _passwordResetService.SendPasswordResetToken(user.Email, token);
+        }
+
+        public User? CheckUserPasswordResetToken(string email, string token)
+        {
+            User user = GetUserByEmail(email);
+
+            if (user != null && user.PasswordResetToken == token)
+            {
+                return user;
+            }
+
+            return null;
         }
 
         public bool ChangeUserPassword(User user, string password)

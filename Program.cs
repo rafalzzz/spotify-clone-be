@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NLog.Web;
 using FluentValidation;
+using SpotifyAPI.Configuration;
 using SpotifyAPI.Entities;
 using SpotifyAPI.Helpers;
 using SpotifyAPI.Models;
@@ -26,6 +27,7 @@ var passwordResetSettings = builder.Configuration.GetSection("PasswordResetSetti
 builder.Services.Configure<PasswordResetSettings>(passwordResetSettings);
 
 builder.Host.UseNLog();
+new CorsConfiguration(builder.Services);
 
 // Additional Services
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -46,6 +48,8 @@ builder.Services.AddScoped<IValidator<PasswordResetCompleteRequest>, PasswordRes
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+app.UseCors(Cors.CorsPolicy);
 
 // Configure the HTTP request pipeline.
 
