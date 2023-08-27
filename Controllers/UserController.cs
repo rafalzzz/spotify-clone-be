@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
 using SpotifyAPI.Entities;
 using SpotifyAPI.Enums;
+using SpotifyAPI.Models;
 using SpotifyAPI.Requests;
 using SpotifyAPI.Services;
 using SpotifyAPI.Variables;
@@ -141,19 +142,19 @@ namespace SpotifyAPI.Controllers
         public ActionResult PasswordResetComplete([FromBody] PasswordResetCompleteRequest passwordResetCompleteDto, [FromRoute] string token)
         {
             var validationResult = _requestValidationService.ValidateRequest(passwordResetCompleteDto, _passwordResetCompleteRequestValidator);
-            if (validationResult is BadRequestObjectResult)
+            if (validationResult is BadRequestObjectResult badRequest)
             {
-                return validationResult;
+                return badRequest;
             }
 
-            var tokenValidationResult = _passwordResetService.ValidateToken(token);
-            if (tokenValidationResult != null)
+            (string? validationError, string? email) = _passwordResetService.ValidateToken(token);
+            if (validationError != null)
             {
-                return tokenValidationResult;
+                return Unauthorized(validationResult);
             }
 
-            User? user = _userService.GetUserByEmail(_passwordResetService.GetEmailFromToken(token));
-            if (user == null || user.PasswordResetToken != token)
+            User? user = _userService.CheckUserPasswordResetToken(email, token);
+            if (user == null)
             {
                 return BadRequest("Invalid token");
             }
